@@ -1,8 +1,8 @@
- comfy_model_html.py
- this program reads the sage_cache.json, pulls more data from civitai, then writes out models that hava a lastused timestamp to a sqlite3 database in memory
+ comfy_model_html.py  
+ this program reads the *sage_cache.json*, pulls more data from civitai, then writes out models that hava a lastused timestamp to a sqlite3 database in memory
  it writes out models that do not have a last used timestamp to internal dictionaries. It then uses these data sources to create 2 html files.
- loras.html contains all comfyui loras starting with the most recently used
- xpoints.html contains all comfyUI checkpoints starting with the most recently used
+ - *loras.html* contains all comfyui loras starting with the most recently used
+ - *xpoints.html* contains all comfyUI checkpoints starting with the most recently used
  The format and composition of the html tables can be customized as follows
  You can customize the output table format completely.
  You can add fields, remove fields, change the column order, whatever you like    
