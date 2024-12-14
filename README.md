@@ -25,11 +25,11 @@
 	   | └------------ Model name
 	   └-------------- Number of columns
 
- The example and default string tells the program to create a 7 column table containing
- Model name in column 1
- Trigger words in column 2
- Civitai URL in column 3
- Denoise info in column 4
- Example image in column 5
- Prompt in column 6
- Last used date in column 7
+ The example and default string tells the program to create a 7 column table containing:
+ - Model name in column 1
+ - Trigger words in column 2
+ - Civitai URL in column 3
+ - Denoise info in column 4
+ - Example image in column 5
+ - Prompt in column 6
+ - Last used date in column 7
