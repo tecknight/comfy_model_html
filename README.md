@@ -12,18 +12,18 @@
 
        7-100230004567
        | |||||||||||└- Last used date 
-		| ||||||||||└-- Prompt
-		| |||||||||└--- Example image
-		| ||||||||└---- Denoise info
-		| |||||||└----- Steps used
-		| ||||||└------ Model civitai ID
-		| |||||└------- Model hash
-		| ||||└-------- Civitai URL
-		| |||└--------- Trigger words
-		| ||└---------- Model type (LORA or Checkpoint)
-		| |└----------- Base model (Flux, Pony, etc)
-		| └------------ Model name
-		└-------------- Number of columns
+	   | ||||||||||└-- Prompt
+	   | |||||||||└--- Example image
+	   | ||||||||└---- Denoise info
+	   | |||||||└----- Steps used
+	   | ||||||└------ Model civitai ID
+	   | |||||└------- Model hash
+	   | ||||└-------- Civitai URL
+	   | |||└--------- Trigger words
+	   | ||└---------- Model type (LORA or Checkpoint)
+	   | |└----------- Base model (Flux, Pony, etc)
+	   | └------------ Model name
+	   └-------------- Number of columns
 
  The example and default string tells the program to create a 7 column table containing
  Model name in column 1
