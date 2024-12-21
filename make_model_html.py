@@ -44,6 +44,7 @@ import time
 import sqlite3
 import datetime
 import sys
+import html
 
 def parse_json_file(filename):
     try:
@@ -303,7 +304,7 @@ for curmodel in all_models: # loop through each model
 
 conn.commit()
 
-starthtml = "<!DOCTYPE html><html><head><style>th {  border: 2px solid blue;  font: 22px blue;}td {  border: 2px solid maroon;  font: 16px black;}</style><script>async function copyToClipboard(text) {    try {    await navigator.clipboard.writeText(text);    console.log('Text copied to clipboard');  } catch (err) {    console.error('Failed to copy: ', err);  }}</script></head><body><h1 align='center'>r3place</h1><table>   <tr> " 
+starthtml = "<!DOCTYPE html><html><head><meta charset='utf-8'><style>th {  border: 2px solid blue;  font: 22px blue;}td {  border: 2px solid maroon;  font: 16px black;}</style><script>async function copyToClipboard(text) {    try {    await navigator.clipboard.writeText(text);    console.log('Text copied to clipboard');  } catch (err) {    console.error('Failed to copy: ', err);  }}</script></head><body><h1 align='center'>r3place</h1><table>   <tr> " 
 
 column_heads = [
    '<th style="width:200px;"><b>Model Name</b></th>',
@@ -350,6 +351,7 @@ for mtype in ["LORA", "Checkpoint"]:
         modeleximageurl = row[9]
         modelimageprompt = row[10]
         modellastused = row[11]
+        modelname = html.escape(modelname)
         denohtml = modeldenoise.replace("\n", "<br>")
         newimgurl = modeleximageurl.replace("width=450", "width=200")
         modeltrigger = modeltrigger.replace(", ", ",")
@@ -439,6 +441,7 @@ for mtype in ["LORA", "Checkpoint"]:
         modelhash = modeld[curmodel]['modelhash']
         modellastused = ""
         rowhtml = "<tr>"
+        modelname = html.escape(modelname)
         denohtml = modeldenoise.replace("\n", "<br>")
         newimgurl = modeleximageurl.replace("width=450", "width=200")
         modeltrigger = modeltrigger.replace(", ", ",")
