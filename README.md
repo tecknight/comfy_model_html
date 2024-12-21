@@ -13,7 +13,6 @@
  The 3rd through the last character indicate the destination of each data field, 0 means the field is not displayed in the output table.
  Any other value indicates the column number to display the field in.
  If you need 10 or more columns use hex (A = 10, B = 11, etc)       
- :
 
        7-100230004567
        | |||||||||||└- Last used date 
@@ -30,7 +29,7 @@
 	   | └------------ Model name
 	   └-------------- Number of columns
 
- The example and default string tells the program to create a 7 column table containing:
+ The example and default string shown above tells the program to create a 7 column table containing:
  - *Model name* in column 1
  - *Trigger words* in column 2
  - *Civitai URL* in column 3
