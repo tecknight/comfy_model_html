@@ -134,7 +134,7 @@ def int2x(num):
 #    modeldenoise varchar(200), 
 #    modeleximageurl varchar(100), 
 #    modelimageprompt varchar(1000), 
-#    modellastused datetime primary key
+#    modellastused datetime primary key);
 
 
 
@@ -165,7 +165,7 @@ num_models = len(sage_cache)
 HIGHINT = 32000
 all_models = sage_cache.keys() # returns a list of model full paths
 
-conn = sqlite3.connect(":memory:") # create to our sqlite db in memory
+conn = sqlite3.connect(":memory:") # create our sqlite3 db in memory
 cursor = conn.cursor()
 cursor.execute("CREATE TABLE modelinfo (modelname varchar(80), basemodel varchar(20), modeltype varchar(10), modeltrigger varchar(1000), modelcivurl varchar(100), modelhash varchar(10), modelid int, modelsteps int, modeldenoise varchar(200), modeleximageurl varchar(100), modelimageprompt varchar(1000), modellastused datetime primary key);")
 conn.commit()
@@ -403,7 +403,10 @@ for mtype in ["LORA", "Checkpoint"]:
                     case 7:
                         rowhtml += '<td style="text-align:center;">' + str(modelsteps) + '</td>' + nln
                     case 8:
-                        rowhtml += '<td style="text-align:center;">' + denohtml + '</td>' + nln    
+                        if modelsteps > 14 or modelsteps == 0:                        
+                            rowhtml += '<td style="text-align:center;">' + denohtml + '</td>' + nln
+                        else:
+                            rowhtml += '<td style="color:yellow;background-color:black;text-align:center;">' + denohtml + '</td>' + nln
                     case 9:
                         rowhtml += '<td style="text-align:center;"><img src="' + newimgurl + '"></td>' + nln
                     case 10:
@@ -492,7 +495,10 @@ for mtype in ["LORA", "Checkpoint"]:
                     case 7:
                         rowhtml += '<td style="text-align:center;">' + str(modelsteps) + '</td>' + nln
                     case 8:
-                        rowhtml += '<td style="text-align:center;">' + denohtml + '</td>' + nln    
+                        if modelsteps > 14 or modelsteps == 0:                        
+                            rowhtml += '<td style="text-align:center;">' + denohtml + '</td>' + nln
+                        else:
+                            rowhtml += '<td style="color:yellow;background-color:black;text-align:center;">' + denohtml + '</td>' + nln
                     case 9:
                         rowhtml += '<td style="text-align:center;"><img src="' + newimgurl + '"></td>' + nln
                     case 10:
