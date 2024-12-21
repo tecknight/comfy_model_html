@@ -1,13 +1,13 @@
- make_model_html.py  
- this program reads the **sage_cache.json**, pulls more data from civitai, then writes out models that hava a lastused timestamp to a sqlite3 database in memory
- it writes out models that do not have a last used timestamp to internal dictionaries. It then uses these data sources to create 2 html files.
+# make_model_html.py  
+ this program reads the **sage_cache.json**, pulls more data from civitai, then writes out models that have a lastused timestamp to a sqlite3 database in memory.
+ it then writes out models that do not have a last used timestamp to internal dictionaries in memory. It uses these data sources to create 2 html files:
  - **loras.html** contains all comfyui loras starting with the most recently used
  - **xpoints.html** contains all comfyUI checkpoints starting with the most recently used  
  here is an example: <https://aiartalley.com/xpoints.html>  
  
  The format and composition of the html tables can be customized as follows
  You can customize the output table format completely.
- You can add fields, remove fields, change the column order, whatever you like    
+ You can add fields, remove fields, change the column order, whatever you like.    
  Number indicates which column in table, zero means do not include this field
  If you need 10 or more columns use hex (A = 10, B = 11, etc)       
  A 14 character formatted string can be passed as a shell parameter:
@@ -28,10 +28,10 @@
 	   └-------------- Number of columns
 
  The example and default string tells the program to create a 7 column table containing:
- - Model name in column 1
- - Trigger words in column 2
- - Civitai URL in column 3
- - Denoise info in column 4
- - Example image in column 5
- - Prompt in column 6
- - Last used date in column 7
+ - *Model name* in column 1
+ - *Trigger words* in column 2
+ - *Civitai URL* in column 3
+ - *Denoise info* in column 4
+ - *Example image* in column 5
+ - *Prompt* in column 6
+ - *Last used date* in column 7
