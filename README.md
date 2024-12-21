@@ -1,16 +1,19 @@
 # make_model_html.py  
- this program reads the **sage_cache.json**, pulls more data from civitai, then writes out models that have a lastused timestamp to a sqlite3 database in memory.
- it then writes out models that do not have a last used timestamp to internal dictionaries in memory. It uses these data sources to create 2 html files:
- - **loras.html** contains all comfyui loras starting with the most recently used
- - **xpoints.html** contains all comfyUI checkpoints starting with the most recently used  
- here is an example: <https://aiartalley.com/xpoints.html>  
+ This program requires that the **EXTREMELY USEFUL** ComfyUI custom node **Sage Utils** <https://github.com/arcum42/ComfyUI_SageUtils> be installed.
+ **comfy_model_html** reads the SageUtils **sage_cache.json**, pulls additional model data from civitai, then writes out models that have a lastused timestamp to a sqlite3 database in memory.
+ It then writes out models that do not have a last used timestamp to internal dictionaries in memory. It uses these data sources to create 2 html files:
+ - **loras.html** details all comfyUI loras starting with the most recently used
+ - **xpoints.html** details all comfyUI checkpoints starting with the most recently used  
+ Here is an example: <https://aiartalley.com/xpoints.html>  
  
- The format and composition of the html tables can be customized as follows
- You can customize the output table format completely.
- You can add fields, remove fields, change the column order, whatever you like.    
- Number indicates which column in table, zero means do not include this field
+ The format and composition of the html tables can be customized.
+ You can specify the output table format, specifying which fields you want in the table and the column order you prefer.
+ A 14 character formatted string can be passed as a shell parameter
+ The first character indicates the total total number of columns in your table
+ The 3rd through the last character indicate the destination of each data field, 0 means the field is not displayed in the output table.
+ Any other value indicates the column number to display the field in.
  If you need 10 or more columns use hex (A = 10, B = 11, etc)       
- A 14 character formatted string can be passed as a shell parameter:
+ :
 
        7-100230004567
        | |||||||||||└- Last used date 
