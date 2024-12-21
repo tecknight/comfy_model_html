@@ -1,5 +1,6 @@
 # make_model_html.py  
- This program requires that the **EXTREMELY USEFUL** ComfyUI custom node **Sage Utils** <https://github.com/arcum42/ComfyUI_SageUtils> be installed.
+ This program requires that the **EXTREMELY USEFUL** ComfyUI custom node **Sage Utils**:  
+ <https://github.com/arcum42/ComfyUI_SageUtils> be installed.  
  **comfy_model_html** reads the SageUtils **sage_cache.json**, pulls additional model data from civitai, then writes out models that have a lastused timestamp to a sqlite3 database in memory.
  It then writes out models that do not have a last used timestamp to internal dictionaries in memory. It uses these data sources to create 2 html files:
  - **loras.html** details all comfyUI loras starting with the most recently used
