@@ -45,6 +45,7 @@ import sqlite3
 import datetime
 import sys
 import html
+from pathlib import Path
 
 def parse_json_file(filename):
     try:
@@ -164,8 +165,9 @@ print('# of Models: ' + str(len(sage_cache)))
 num_models = len(sage_cache)
 HIGHINT = 32000
 all_models = sage_cache.keys() # returns a list of model full paths
-
+# pathlib.Path.unlink("c:\\cui\\modelinfo.db")
 conn = sqlite3.connect(":memory:") # create our sqlite3 db in memory
+# conn = sqlite3.connect("c:\\cui\\modelinfo.db")  # create sqlite3 db on disk
 cursor = conn.cursor()
 cursor.execute("CREATE TABLE modelinfo (modelname varchar(80), basemodel varchar(20), modeltype varchar(10), modeltrigger varchar(1000), modelcivurl varchar(100), modelhash varchar(10), modelid int, modelsteps int, modeldenoise varchar(200), modeleximageurl varchar(100), modelimageprompt varchar(1000), modellastused datetime primary key);")
 conn.commit()
@@ -188,7 +190,7 @@ for curmodel in all_models: # loop through each model
     modelname = sage_cache[curmodel]['model']['name']
     modelid = sage_cache[curmodel]['modelId']
     words = sage_cache[curmodel]['trainedWords']
-    
+
     modeltrigger = ", ".join(words)
     
    
@@ -199,10 +201,12 @@ for curmodel in all_models: # loop through each model
         modellastused = ""
         
     modelcivurl = "https://civitai.com/models/" + str(modelid)
-#    print(f"Pulling json for: {modelhash}")
+    print(f"..Processing: {modelname}")
+    
+    print(f"....Pulling json for: {modelhash}")
     civjson = get_civitai_json(modelhash)
     if civjson == {}:
-#       print("Unable to get data from hash. Continuing")
+        print(f"....Unable to get data from {modelhash}. Continuing")
         continue
         
     foundeximage = False
@@ -266,8 +270,25 @@ for curmodel in all_models: # loop through each model
                 modeleximageurl = ""
                 
             foundeximage = True
+            
+    modeleximageurl = modeleximageurl.replace("width=450", "width=200")
+    modeltrigger = modeltrigger.replace(", ", ",")
+    modeltrigger = modeltrigger.replace(",", ", ")
+    modelimageprompt = modelimageprompt.replace(", ", ",")
+    modelimageprompt = modelimageprompt.replace(",", ", ")
+    modelimageprompt = modelimageprompt.replace("| ", "|")
+    modelimageprompt = modelimageprompt.replace("|", "| ")
+    modelimageprompt = modelimageprompt.replace("\r", "")
+    modelimageprompt = modelimageprompt.replace("\n", "")
+       
+    clipimgprompt = modelimageprompt.replace('"', "")
+    clipimgprompt = clipimgprompt.replace("'", "")
+    if modeltype == "LoCon":
+        modeltype = "LORA"
+        
     if modellastused == "":    
         if modeltype == "LORA":
+            print(f"....Writing {modelname} to LORA dict") 
             loradict[curmodel] = {}
             loradict[curmodel]['modelname'] = modelname
             loradict[curmodel]['basemodel'] = basemodel  
@@ -276,13 +297,14 @@ for curmodel in all_models: # loop through each model
             loradict[curmodel]['modelcivurl'] = modelcivurl
             loradict[curmodel]['modeleximageurl'] = modeleximageurl
             loradict[curmodel]['modelsteps'] = modelsteps
-            modeldenoise = "Steps: " + str(modelsteps) + "\n" + "Sampler: " + modelsampler + "\n" + "Scheduler: " + modelscheduler + "\n" + "CFG Scale: " + str(modelcfgscale)
+            modeldenoise = "Steps: " + str(modelsteps) + "<br>" + "Sampler: " + modelsampler + "<br>" + "Scheduler: " + modelscheduler + "<br>" + "CFG Scale: " + str(modelcfgscale)
             loradict[curmodel]['modeldenoise'] = modeldenoise
             loradict[curmodel]['modelimageprompt'] = modelimageprompt
             loradict[curmodel]['modellastused'] = modellastused
             loradict[curmodel]['modelid'] = modelid
             loradict[curmodel]['modelhash'] = modelhash
         else:
+            print(f"....Writing {modelname} to checkpoint dict") 
             cpdict[curmodel] = {}
             cpdict[curmodel]['modelname'] = modelname
             cpdict[curmodel]['basemodel'] = basemodel 
@@ -291,15 +313,15 @@ for curmodel in all_models: # loop through each model
             cpdict[curmodel]['modelcivurl'] = modelcivurl
             cpdict[curmodel]['modeleximageurl'] = modeleximageurl
             cpdict[curmodel]['modelsteps'] = modelsteps
-            modeldenoise = "Steps: " + str(modelsteps) + "\n" + "Sampler: " + modelsampler + "\n" + "Scheduler: " + modelscheduler + "\n" + "CFG  Scale: " + str(modelcfgscale)
+            modeldenoise = "Steps: " + str(modelsteps) + "<br>" + "Sampler: " + modelsampler + "<br>" + "Scheduler: " + modelscheduler + "<br>" + "CFG  Scale: " + str(modelcfgscale)
             cpdict[curmodel]['modeldenoise'] = modeldenoise
             cpdict[curmodel]['modelimageprompt'] = modelimageprompt
             cpdict[curmodel]['modellastused'] = modellastused
             cpdict[curmodel]['modelid'] = modelid
             cpdict[curmodel]['modelhash'] = modelhash
     else:       
-        modeldenoise = "Steps: " + str(modelsteps) + "\n" + "Sampler: " + modelsampler + "\n" + "Scheduler: " + modelscheduler + "\n" + "CFG Scale: " + str(modelcfgscale)
-            
+        modeldenoise = "Steps: " + str(modelsteps) + "<br>" + "Sampler: " + modelsampler + "<br>" + "Scheduler: " + modelscheduler + "<br>" + "CFG Scale: " + str(modelcfgscale)
+        print(f"....Writing {modelname} to sqlite3 database")   
         cursor.execute("INSERT INTO modelinfo (modelname, basemodel, modeltype, modeltrigger, modelcivurl, modeleximageurl, modelsteps, modeldenoise, modelimageprompt, modellastused, modelid, modelhash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (modelname, basemodel, modeltype, modeltrigger, modelcivurl, modeleximageurl, modelsteps, modeldenoise, modelimageprompt, modellastused, modelid, modelhash))
 
 conn.commit()
@@ -351,20 +373,9 @@ for mtype in ["LORA", "Checkpoint"]:
         modeleximageurl = row[9]
         modelimageprompt = row[10]
         modellastused = row[11]
-        modelname = html.escape(modelname)
-        denohtml = modeldenoise.replace("\n", "<br>")
-        newimgurl = modeleximageurl.replace("width=450", "width=200")
-        modeltrigger = modeltrigger.replace(", ", ",")
-        modeltrigger = modeltrigger.replace(",", ", ")
-        modelimageprompt = modelimageprompt.replace(", ", ",")
-        modelimageprompt = modelimageprompt.replace(",", ", ")
-        modelimageprompt = modelimageprompt.replace("| ", "|")
-        modelimageprompt = modelimageprompt.replace("|", "| ")
-        modelimageprompt = modelimageprompt.replace("\r", "")
-        modelimageprompt = modelimageprompt.replace("\n", "")
-       
-        clipimgprompt = modelimageprompt.replace('"', "")
-        clipimgprompt = clipimgprompt.replace("'", "")
+        print(f"..Read {modelname} from sqlite3 db")
+        denohtml = modeldenoise
+
         for col in range (1, maxcol):
             fstr = int2x(col) 
             elm = tbcf.find(fstr, 2)
@@ -408,7 +419,7 @@ for mtype in ["LORA", "Checkpoint"]:
                         else:
                             rowhtml += '<td style="color:yellow;background-color:black;text-align:center;">' + denohtml + '</td>' + nln
                     case 9:
-                        rowhtml += '<td style="text-align:center;"><img src="' + newimgurl + '"></td>' + nln
+                        rowhtml += '<td style="text-align:center;"><img src="' + modeleximageurl + '"></td>' + nln
                     case 10:
                         if modelimageprompt == "":
                             rowhtml += "<td></td>" + nln
@@ -442,21 +453,22 @@ for mtype in ["LORA", "Checkpoint"]:
         modelid = modeld[curmodel]['modelid']
         modelname = modeld[curmodel]['modelname']
         modelhash = modeld[curmodel]['modelhash']
+        basemodel = modeld[curmodel]['basemodel']
         modellastused = ""
         rowhtml = "<tr>"
-        modelname = html.escape(modelname)
-        denohtml = modeldenoise.replace("\n", "<br>")
-        newimgurl = modeleximageurl.replace("width=450", "width=200")
-        modeltrigger = modeltrigger.replace(", ", ",")
-        modeltrigger = modeltrigger.replace(",", ", ")
-        modelimageprompt = modelimageprompt.replace(", ", ",")
-        modelimageprompt = modelimageprompt.replace(",", ", ")
-        modelimageprompt = modelimageprompt.replace("| ", "|")
-        modelimageprompt = modelimageprompt.replace("|", "| ")
-        modelimageprompt = modelimageprompt.replace("\r", "")
-        modelimageprompt = modelimageprompt.replace("\n", "")
-        clipimgprompt = modelimageprompt.replace('"', "")
-        clipimgprompt = clipimgprompt.replace("'", "")
+
+        denohtml = modeldenoise
+
+#       modeltrigger = modeltrigger.replace(", ", ",")
+#       modeltrigger = modeltrigger.replace(",", ", ")
+#       modelimageprompt = modelimageprompt.replace(", ", ",")
+#       modelimageprompt = modelimageprompt.replace(",", ", ")
+#       modelimageprompt = modelimageprompt.replace("| ", "|")
+#       modelimageprompt = modelimageprompt.replace("|", "| ")
+#       modelimageprompt = modelimageprompt.replace("\r", "")
+#       modelimageprompt = modelimageprompt.replace("\n", "")
+#       clipimgprompt = modelimageprompt.replace('"', "")
+#       clipimgprompt = clipimgprompt.replace("'", "")
         for col in range (1, maxcol):
             fstr = int2x(col) 
             elm = tbcf.find(fstr, 2)
@@ -500,7 +512,7 @@ for mtype in ["LORA", "Checkpoint"]:
                         else:
                             rowhtml += '<td style="color:yellow;background-color:black;text-align:center;">' + denohtml + '</td>' + nln
                     case 9:
-                        rowhtml += '<td style="text-align:center;"><img src="' + newimgurl + '"></td>' + nln
+                        rowhtml += '<td style="text-align:center;"><img src="' + modeleximageurl + '"></td>' + nln
                     case 10:
                         if modelimageprompt == "":
                             rowhtml += "<td></td>" + nln
