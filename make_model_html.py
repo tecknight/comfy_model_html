@@ -159,11 +159,11 @@ def int2x(num):
 
 # read in the sage_cache.json file created by Sage Utils
 
-tbcf = "7-1002300045670"
+tbcf = "7-100230004567-0"
 Embed_Images = False
 if len(sys.argv) > 1:
     passed = sys.argv[1]
-    if len(passed) == 15:
+    if len(passed) == 16:
         tbcf = passed
         if passed.endswith('1'):
             Embed_Images = True
@@ -182,6 +182,7 @@ sage_cache = parse_json_file(sc_path)  # This will contain your parsed data if s
 cpdict = {}  # this is a container for checkpoint info
 
 loradict = {}  # this is a container for lora info
+
 print('# of Models: ' + str(len(sage_cache)))
 num_models = len(sage_cache)
 HIGHINT = 32000
@@ -346,8 +347,8 @@ for curmodel in all_models: # loop through each model
         cursor.execute("INSERT INTO modelinfo (modelname, basemodel, modeltype, modeltrigger, modelcivurl, modeleximageurl, modelsteps, modeldenoise, modelimageprompt, modellastused, modelid, modelhash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (modelname, basemodel, modeltype, modeltrigger, modelcivurl, modeleximageurl, modelsteps, modeldenoise, modelimageprompt, modellastused, modelid, modelhash))
 
 conn.commit()
-
-starthtml = "<!DOCTYPE html><html>\n<head><meta charset='utf-8'>\n<style>th {  border: 2px solid blue;  font: 22px blue;}td {  border: 2px solid maroon;  font: 16px black;}</style>\n<script>async function copyToClipboard(text) {    try {    await navigator.clipboard.writeText(text);    console.log('Text copied to clipboard');  } catch (err) {    console.error('Failed to copy: ', err);  }}</script>\n</head><body><h1 align='center'>r3place</h1><table>   <tr> " 
+print("\n")
+starthtml = "<!DOCTYPE html><html>\n<head><meta charset='utf-8'>\n<style>th {  border: 2px solid blue;  color: yellow; background-color: blue; font: 22px blue;}td {  border: 2px solid maroon;  font: 16px black;}</style>\n<script>async function copyToClipboard(text) {    try {    await navigator.clipboard.writeText(text);    console.log('Text copied to clipboard');  } catch (err) {    console.error('Failed to copy: ', err);  }}</script>\n</head><body><h1 align='center'>r3place</h1><table align='center'>   <tr> " 
 
 column_heads = [
    '<th style="width:200px;"><b>Model Name</b></th>',
@@ -380,7 +381,9 @@ for mtype in ["LORA", "Checkpoint"]:
     dbselect = "SELECT * FROM modelinfo WHERE modeltype='" + mtype + "' order by modellastused DESC"
     
     cursor.execute(dbselect)  
+
     for row in cursor.fetchall():
+
         rowhtml = "<tr>"
         modelname = row[0]
         basemodel = row[1]
@@ -425,7 +428,7 @@ for mtype in ["LORA", "Checkpoint"]:
                         if modeltrigger == "":
                             rowhtml += '<td style="text-align:center;"><i>No triggers</i></td>' + nln
                         else:
-                            rowhtml += '<td style="text-align:center;">' + modeltrigger + '<br><br><button style="background-color: blue; color: white;" id="copyButton" onclick="copyToClipboard(' + "'" + modeltrigger + "'" + ')">Triggers to clipboard</button></td>' + nln
+                            rowhtml += '<td style="text-align:center;">' + modeltrigger + '<br><br><button style="background-color: #01006D; color: yellow;" id="copyButton" onclick="copyToClipboard(' + "'" + modeltrigger + "'" + ')">Triggers to clipboard</button></td>' + nln
                     case 4:
                         rowhtml += '<td style="text-align:center;"><a href="' + modelcivurl + '">' + str(modelid) + '</a></td>' + nln
                     case 5:
@@ -455,7 +458,7 @@ for mtype in ["LORA", "Checkpoint"]:
                         if modelimageprompt == "":
                             rowhtml += "<td></td>" + nln
                         else:
-                            rowhtml += '<td style="text-align:center;">' + modelimageprompt + '<br><br><button style="background-color: blue; color: white;" id="copyButton" onclick="copyToClipboard(' + "'" + modelimageprompt + "'" + ')">Prompt to clipboard</button></td>' + nln
+                            rowhtml += '<td style="text-align:center;">' + modelimageprompt + '<br><br><button style="background-color: #01006D; color: yellow;" id="copyButton" onclick="copyToClipboard(' + "'" + modelimageprompt + "'" + ')">Prompt to clipboard</button></td>' + nln
                     case 11:
                         rowhtml += '<td style="text-align:center;">' + modellastused + '</td>' + nln
             else:
@@ -518,7 +521,7 @@ for mtype in ["LORA", "Checkpoint"]:
                         if modeltrigger == "":
                             rowhtml += '<td style="text-align:center;"><i>No triggers</i></td>' + nln
                         else:
-                            rowhtml += '<td style="text-align:center;">' + modeltrigger + '<br><br><button style="background-color: blue; color: white;" id="copyButton" onclick="copyToClipboard(' + "'" + modeltrigger + "'" + ')">Triggers to clipboard</button></td>' + nln
+                            rowhtml += '<td style="text-align:center;">' + modeltrigger + '<br><br><button style="background-color: #01006D; color: yellow;" id="copyButton" onclick="copyToClipboard(' + "'" + modeltrigger + "'" + ')">Triggers to clipboard</button></td>' + nln
                     case 4:
                         rowhtml += '<td style="text-align:center;"><a href="' + modelcivurl + '">' + str(modelid) + '</a></td>' + nln
                     case 5:
@@ -548,7 +551,7 @@ for mtype in ["LORA", "Checkpoint"]:
                         if modelimageprompt == "":
                             rowhtml += "<td></td>" + nln
                         else:
-                            rowhtml += '<td style="text-align:center;">' + modelimageprompt + '<br><br><button style="background-color: blue; color: white;" id="copyButton" onclick="copyToClipboard(' + "'" + modelimageprompt + "'" + ')">Prompt to clipboard</button></td>' + nln
+                            rowhtml += '<td style="text-align:center;">' + modelimageprompt + '<br><br><button style="background-color: #01006D; color: yellow;" id="copyButton" onclick="copyToClipboard(' + "'" + modelimageprompt + "'" + ')">Prompt to clipboard</button></td>' + nln
                     case 11:
                         rowhtml += '<td style="text-align:center;">' + modellastused + '</td>' + nln
             else:
@@ -558,7 +561,7 @@ for mtype in ["LORA", "Checkpoint"]:
         totalhtml += rowhtml        
   
     totalhtml += '</table></body></html>'
-    
+    print("\n")
     if mtype == "LORA":
         outfile = open(my_folder / "loras.html", "w", encoding="utf-8") 
         outfile.write(totalhtml)
