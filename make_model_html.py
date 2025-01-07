@@ -10,7 +10,7 @@
 # If you need 10 or more columns use hex (A = 10, B = 11, etc)       
 # A 14 character formatted string can be passed as a shell parameter:
 #
-#       7-100230004567
+#       7-1002300045670-Embed images 0=False, 1=True
 #       | |||||||||||└- Last used date 
 #		| ||||||||||└-- Prompt
 #		| |||||||||└--- Example image
@@ -45,6 +45,9 @@ import sqlite3
 import datetime
 import sys
 import html
+
+import urllib.request 
+
 from pathlib import Path
 
 def parse_json_file(filename):
@@ -78,6 +81,21 @@ def get_civitai_json(hash):
 #        print(f"HTTP error occurred: {http_err}")
 #        return {"error": "HTTP error occurred: " + http_err}
     return r.json()
+    
+def download_image(url, save_as):
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open(save_as, 'wb') as f:
+            f.write(response.content)
+    else:
+        print("Failed to download image!")
+
+def getFNfromURL(url):
+
+  parts = url.split('/')
+
+  return parts[len(parts) - 1]
+
     
 def pull_json(self, hash):
     the_json = {}
@@ -141,11 +159,14 @@ def int2x(num):
 
 # read in the sage_cache.json file created by Sage Utils
 
-tbcf = "7-100230004567"
+tbcf = "7-1002300045670"
+Embed_Images = False
 if len(sys.argv) > 1:
     passed = sys.argv[1]
-    if len(passed) == 14:
+    if len(passed) == 15:
         tbcf = passed
+        if passed.endswith('1'):
+            Embed_Images = True
         print("using custom output format: " + passed)
     else:
         print("Improper argument: " + passed)
@@ -201,9 +222,9 @@ for curmodel in all_models: # loop through each model
         modellastused = ""
         
     modelcivurl = "https://civitai.com/models/" + str(modelid)
-    print(f"..Processing: {modelname}")
+#   print(f"..Processing: {modelname}")
     
-    print(f"....Pulling json for: {modelhash}")
+#   print(f"....Pulling json for: {modelhash}")
     civjson = get_civitai_json(modelhash)
     if civjson == {}:
         print(f"....Unable to get data from {modelhash}. Continuing")
@@ -280,15 +301,15 @@ for curmodel in all_models: # loop through each model
     modelimageprompt = modelimageprompt.replace("|", "| ")
     modelimageprompt = modelimageprompt.replace("\r", "")
     modelimageprompt = modelimageprompt.replace("\n", "")
-       
-    clipimgprompt = modelimageprompt.replace('"', "")
-    clipimgprompt = clipimgprompt.replace("'", "")
+    modelimageprompt = modelimageprompt.replace('"', "")
+    modelimageprompt = modelimageprompt.replace("'", "")
+    
     if modeltype == "LoCon":
         modeltype = "LORA"
         
     if modellastused == "":    
         if modeltype == "LORA":
-            print(f"....Writing {modelname} to LORA dict") 
+#           print(f"....Writing {modelname} to LORA dict") 
             loradict[curmodel] = {}
             loradict[curmodel]['modelname'] = modelname
             loradict[curmodel]['basemodel'] = basemodel  
@@ -304,7 +325,7 @@ for curmodel in all_models: # loop through each model
             loradict[curmodel]['modelid'] = modelid
             loradict[curmodel]['modelhash'] = modelhash
         else:
-            print(f"....Writing {modelname} to checkpoint dict") 
+#           print(f"....Writing {modelname} to checkpoint dict") 
             cpdict[curmodel] = {}
             cpdict[curmodel]['modelname'] = modelname
             cpdict[curmodel]['basemodel'] = basemodel 
@@ -321,12 +342,12 @@ for curmodel in all_models: # loop through each model
             cpdict[curmodel]['modelhash'] = modelhash
     else:       
         modeldenoise = "Steps: " + str(modelsteps) + "<br>" + "Sampler: " + modelsampler + "<br>" + "Scheduler: " + modelscheduler + "<br>" + "CFG Scale: " + str(modelcfgscale)
-        print(f"....Writing {modelname} to sqlite3 database")   
+#       print(f"....Writing {modelname} to sqlite3 database")   
         cursor.execute("INSERT INTO modelinfo (modelname, basemodel, modeltype, modeltrigger, modelcivurl, modeleximageurl, modelsteps, modeldenoise, modelimageprompt, modellastused, modelid, modelhash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (modelname, basemodel, modeltype, modeltrigger, modelcivurl, modeleximageurl, modelsteps, modeldenoise, modelimageprompt, modellastused, modelid, modelhash))
 
 conn.commit()
 
-starthtml = "<!DOCTYPE html><html><head><meta charset='utf-8'><style>th {  border: 2px solid blue;  font: 22px blue;}td {  border: 2px solid maroon;  font: 16px black;}</style><script>async function copyToClipboard(text) {    try {    await navigator.clipboard.writeText(text);    console.log('Text copied to clipboard');  } catch (err) {    console.error('Failed to copy: ', err);  }}</script></head><body><h1 align='center'>r3place</h1><table>   <tr> " 
+starthtml = "<!DOCTYPE html><html>\n<head><meta charset='utf-8'>\n<style>th {  border: 2px solid blue;  font: 22px blue;}td {  border: 2px solid maroon;  font: 16px black;}</style>\n<script>async function copyToClipboard(text) {    try {    await navigator.clipboard.writeText(text);    console.log('Text copied to clipboard');  } catch (err) {    console.error('Failed to copy: ', err);  }}</script>\n</head><body><h1 align='center'>r3place</h1><table>   <tr> " 
 
 column_heads = [
    '<th style="width:200px;"><b>Model Name</b></th>',
@@ -373,7 +394,7 @@ for mtype in ["LORA", "Checkpoint"]:
         modeleximageurl = row[9]
         modelimageprompt = row[10]
         modellastused = row[11]
-        print(f"..Read {modelname} from sqlite3 db")
+#       print(f"..Read {modelname} from sqlite3 db")
         denohtml = modeldenoise
 
         for col in range (1, maxcol):
@@ -404,7 +425,7 @@ for mtype in ["LORA", "Checkpoint"]:
                         if modeltrigger == "":
                             rowhtml += '<td style="text-align:center;"><i>No triggers</i></td>' + nln
                         else:
-                            rowhtml += '<td style="text-align:center;">' + modeltrigger + '<br><br><button id="copyButton" onclick="copyToClipboard(' + "'" + modeltrigger + "'" + ')">Triggers to clipboard</button></td>' + nln
+                            rowhtml += '<td style="text-align:center;">' + modeltrigger + '<br><br><button style="background-color: blue; color: white;" id="copyButton" onclick="copyToClipboard(' + "'" + modeltrigger + "'" + ')">Triggers to clipboard</button></td>' + nln
                     case 4:
                         rowhtml += '<td style="text-align:center;"><a href="' + modelcivurl + '">' + str(modelid) + '</a></td>' + nln
                     case 5:
@@ -419,12 +440,22 @@ for mtype in ["LORA", "Checkpoint"]:
                         else:
                             rowhtml += '<td style="color:yellow;background-color:black;text-align:center;">' + denohtml + '</td>' + nln
                     case 9:
-                        rowhtml += '<td style="text-align:center;"><img src="' + modeleximageurl + '"></td>' + nln
+                        if Embed_Images == True:
+                            fname = getFNfromURL(modeleximageurl)
+                            ofname = my_folder / "images" / fname
+#                           print(f"retrieving {modeleximageurl} to {ofname}")
+                            
+                            download_image(modeleximageurl, ofname) 
+  
+                            rowhtml += '<td style="text-align:center;"><img src="' + str(ofname) + '"></td>' + nln
+                        else:
+                            rowhtml += '<td style="text-align:center;"><img src="' + modeleximageurl + '"></td>' + nln
+                            
                     case 10:
                         if modelimageprompt == "":
                             rowhtml += "<td></td>" + nln
                         else:
-                            rowhtml += '<td style="text-align:center;">' + modelimageprompt + '<br><br><button id="copyButton" onclick="copyToClipboard(' + "'" + clipimgprompt + "'" + ')">Prompt to clipboard</button></td>' + nln
+                            rowhtml += '<td style="text-align:center;">' + modelimageprompt + '<br><br><button style="background-color: blue; color: white;" id="copyButton" onclick="copyToClipboard(' + "'" + modelimageprompt + "'" + ')">Prompt to clipboard</button></td>' + nln
                     case 11:
                         rowhtml += '<td style="text-align:center;">' + modellastused + '</td>' + nln
             else:
@@ -459,16 +490,6 @@ for mtype in ["LORA", "Checkpoint"]:
 
         denohtml = modeldenoise
 
-#       modeltrigger = modeltrigger.replace(", ", ",")
-#       modeltrigger = modeltrigger.replace(",", ", ")
-#       modelimageprompt = modelimageprompt.replace(", ", ",")
-#       modelimageprompt = modelimageprompt.replace(",", ", ")
-#       modelimageprompt = modelimageprompt.replace("| ", "|")
-#       modelimageprompt = modelimageprompt.replace("|", "| ")
-#       modelimageprompt = modelimageprompt.replace("\r", "")
-#       modelimageprompt = modelimageprompt.replace("\n", "")
-#       clipimgprompt = modelimageprompt.replace('"', "")
-#       clipimgprompt = clipimgprompt.replace("'", "")
         for col in range (1, maxcol):
             fstr = int2x(col) 
             elm = tbcf.find(fstr, 2)
@@ -497,7 +518,7 @@ for mtype in ["LORA", "Checkpoint"]:
                         if modeltrigger == "":
                             rowhtml += '<td style="text-align:center;"><i>No triggers</i></td>' + nln
                         else:
-                            rowhtml += '<td style="text-align:center;">' + modeltrigger + '<br><br><button id="copyButton" onclick="copyToClipboard(' + "'" + modeltrigger + "'" + ')">Triggers to clipboard</button></td>' + nln
+                            rowhtml += '<td style="text-align:center;">' + modeltrigger + '<br><br><button style="background-color: blue; color: white;" id="copyButton" onclick="copyToClipboard(' + "'" + modeltrigger + "'" + ')">Triggers to clipboard</button></td>' + nln
                     case 4:
                         rowhtml += '<td style="text-align:center;"><a href="' + modelcivurl + '">' + str(modelid) + '</a></td>' + nln
                     case 5:
@@ -512,12 +533,22 @@ for mtype in ["LORA", "Checkpoint"]:
                         else:
                             rowhtml += '<td style="color:yellow;background-color:black;text-align:center;">' + denohtml + '</td>' + nln
                     case 9:
-                        rowhtml += '<td style="text-align:center;"><img src="' + modeleximageurl + '"></td>' + nln
+                        if Embed_Images == True:
+                            fname = getFNfromURL(modeleximageurl)
+                            ofname = my_folder / "images" / fname
+#                           print(f"retrieving {modeleximageurl} to {ofname}")
+                            
+                            download_image(modeleximageurl, ofname) 
+  
+                            rowhtml += '<td style="text-align:center;"><img src="' + str(ofname) + '"></td>' + nln
+                        else:
+                            rowhtml += '<td style="text-align:center;"><img src="' + modeleximageurl + '"></td>' + nln
+                            
                     case 10:
                         if modelimageprompt == "":
                             rowhtml += "<td></td>" + nln
                         else:
-                            rowhtml += '<td style="text-align:center;">' + modelimageprompt + '<br><br><button id="copyButton" onclick="copyToClipboard(' + "'" + clipimgprompt + "'" + ')">Prompt to clipboard</button></td>' + nln
+                            rowhtml += '<td style="text-align:center;">' + modelimageprompt + '<br><br><button style="background-color: blue; color: white;" id="copyButton" onclick="copyToClipboard(' + "'" + modelimageprompt + "'" + ')">Prompt to clipboard</button></td>' + nln
                     case 11:
                         rowhtml += '<td style="text-align:center;">' + modellastused + '</td>' + nln
             else:
