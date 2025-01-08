@@ -2,7 +2,7 @@
  ****
   This program requires that the **EXTREMELY USEFUL** ComfyUI custom node **Sage Utils**:  
  <https://github.com/arcum42/ComfyUI_SageUtils> be installed.  
- In addition to enabling the model tables provided by this utility, Sage Utils provides several additional features. It makes sure your images have all metadata needed so you can recreate them and civitai will recognise them as well. It also allows you to optionally add additional custom metadata, and is able to recognise even renamed models based upon their SHA256 hash. It also keeps track of when each model was last used, enabling some additional features. It's #1611 under custom nodes in ComfyUI Manager.   
+ In addition to enabling the model tables provided by this utility, Sage Utils provides several additional features. It makes sure your images have all metadata needed so you can recreate them and civitai will recognise them as well. It also allows you to optionally add additional custom metadata, and is able to recognise even renamed models based upon their SHA256 hash. It also keeps track of when each model was last used, enabling some additional features. It's #519 under custom nodes in ComfyUI Manager.   
  this program reads the **sage_cache.json**, pulls more data from civitai, then writes out models that hava a lastused timestamp to a sqlite3 database in memory
  it writes out models that do not have a last used timestamp to internal dictionaries. It then uses these data sources to create 2 html files.
  - **loras.html** contains all comfyui loras starting with the most recently used
