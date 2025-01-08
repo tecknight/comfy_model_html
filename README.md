@@ -35,7 +35,7 @@
 	   │ └─Model name
 	   └──Number of columns
 
- The example and default string as shown above tells the program to create:
+ The example and default string as shown above tells the program to create:  
  A 7 column table with:
  - *Model name* in column 1
  - *Trigger words* in column 2
