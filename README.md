@@ -18,23 +18,23 @@
  If you need 10 or more columns use hex (A = 10, B = 11, etc).        
  A 16 character formatted string can be passed as a shell parameter:  
 
-                      ┌──Embed Images (0=False, 1=True). If True, will download 
+                      ┌──►Embed Images (0=False, 1=True). If True, will download 
                       │  images and save locally, making offline pages
                       │
        7-100230004567-0
-       │ │││││││││││└─Last used timestamp 
-	   │ ││││││││││└─Prompt
-	   │ │││││││││└─Example image
-	   │ ││││││││└─Denoise info (steps, sampler, scheduler and config scale)
-	   │ │││││││└─# of Steps used
-	   │ ││││││└─Model civitai ID
-	   │ │││││└─Model hash
-	   │ ││││└─Civitai URL
-	   │ │││└─Trigger words
-	   │ ││└─Model type (LORA or Checkpoint)
-	   │ │└─Base model (Flux, Pony, etc)
-	   │ └─Model name
-	   └──Number of columns
+       │ │││││││││││└─►Last used timestamp 
+	   │ ││││││││││└─►Prompt
+	   │ │││││││││└─►Example image
+	   │ ││││││││└─►Denoise info (steps, sampler, scheduler and config scale)
+	   │ │││││││└─►# of Steps used
+	   │ ││││││└─►Model civitai ID
+	   │ │││││└─►Model hash
+	   │ ││││└─►Civitai URL
+	   │ │││└─►Trigger words
+	   │ ││└─►Model type (LORA or Checkpoint)
+	   │ │└─►Base model (Flux, Pony, etc)
+	   │ └─►Model name
+	   └──►Number of columns
 
  The example and default string as shown above tells the program to create:  
  A 7 column table with:
