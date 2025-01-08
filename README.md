@@ -1,4 +1,5 @@
  # make_model_html.py 
+ ****
   This program requires that the **EXTREMELY USEFUL** ComfyUI custom node **Sage Utils**:  
  <https://github.com/arcum42/ComfyUI_SageUtils> be installed.  
  In addition to enabling the model tables provided by this utility, Sage Utils provides several additional features. It makes sure your images have all metadata needed so you can recreate them and civitai will recognise them as well. It also allows you to optionally add additional custom metadata, and is able to recognise even renamed models based upon their SHA256 hash. It also keeps track of when each model was last used, enabling some additional features. It's #1611 under custom nodes in ComfyUI Manager.   
@@ -8,8 +9,8 @@
  - **xpoints.html** contains all comfyUI checkpoints starting with the most recently used  
  here is an example: <https://aiartalley.com/xpoints.html>  
  
- ![checkpoint report image](checkpoints.png)
- 
+ ![checkpoint report screencap](checkpoints.png)
+ ****
  The format and composition of the html tables can be customized as follows
  You can customize the output table format completely.
  You can add fields, remove fields, change the column order, whatever you like    
@@ -24,8 +25,8 @@
        │ │││││││││││└─Last used timestamp 
 	   │ ││││││││││└─Prompt
 	   │ │││││││││└─Example image
-	   │ ││││││││└─Denoise info
-	   │ │││││││└─Steps used
+	   │ ││││││││└─Denoise info (steps, sampler, scheduler and config scale)
+	   │ │││││││└─# of Steps used
 	   │ ││││││└─Model civitai ID
 	   │ │││││└─Model hash
 	   │ ││││└─Civitai URL
@@ -42,6 +43,6 @@
  - *Civitai URL* in column 3
  - *Denoise info* in column 4
  - *Example image* in column 5
- - Prompt in column 6
+ - *Prompt* in column 6
  - *Last used timestamp* in column 7
  - Images are *not* embedded, and are linked as URLs
