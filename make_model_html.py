@@ -348,7 +348,7 @@ for curmodel in all_models: # loop through each model
 
 conn.commit()
 print("\n")
-starthtml = "<!DOCTYPE html><html>\n<head><meta charset='utf-8'>\n<style>th {  border: 2px solid blue;  color: yellow; background-color: blue; font: 22px blue;}td {  border: 2px solid maroon;  font: 16px black;}</style>\n<script>async function copyToClipboard(text) {    try {    await navigator.clipboard.writeText(text);    console.log('Text copied to clipboard');  } catch (err) {    console.error('Failed to copy: ', err);  }}</script>\n</head><body><h1 align='center'>r3place</h1><table align='center'>   <tr> " 
+starthtml = "<!DOCTYPE html><html>\n<head><meta charset='utf-8'>\n<style>th {  border: 2px solid blue;  color: yellow; background-color: blue; font: 22px blue;}td {  border: 2px solid maroon;  font: 16px black;}</style>\n<script>async function copyToClipboard(text) {    try {    await navigator.clipboard.writeText(text);    console.log('Text copied to clipboard');  } catch (err) {    console.error('Failed to copy: ', err);  }}</script>\n</head><body><h1 align='center' style='color:red; background-color:yellow'>r3place</h1><table align='center'>   <tr> " 
 
 column_heads = [
    '<th style="width:200px;"><b>Model Name</b></th>',
@@ -367,7 +367,7 @@ column_heads = [
    
                           
 for mtype in ["LORA", "Checkpoint"]:
-    totalhtml = starthtml.replace("r3place", mtype + " Details")
+    totalhtml = starthtml.replace("r3place", "ComfyUI " + mtype + " Information")
     maxcol = x2int(tbcf[0]) + 1
     for col in range (1, maxcol):
         fstr = int2x(col) 
@@ -419,7 +419,10 @@ for mtype in ["LORA", "Checkpoint"]:
                                     if basemodel.startswith("SD "):
                                         rowhtml += '<td style="color:white;background-color:black;text-align:center;">' + modelname + '</td>' + nln
                                     else:                                        
-                                        rowhtml += '<td style="color:black;background-color:red;text-align:center;">' + modelname + '</td>' + nln
+                                        if basemodel.startswith("Illustrious"):
+                                            rowhtml += '<td style="color:maroon;background-color:cyan;text-align:center;">' + modelname + '</td>' + nln
+                                        else:   
+                                            rowhtml += '<td style="color:green;background-color:orange;text-align:center;">' + modelname + '</td>' + nln
                     case 1:
                         rowhtml += '<td style="text-align:center;">' + basemodel + '</td>' + nln
                     case 2:
@@ -428,7 +431,7 @@ for mtype in ["LORA", "Checkpoint"]:
                         if modeltrigger == "":
                             rowhtml += '<td style="text-align:center;"><i>No triggers</i></td>' + nln
                         else:
-                            rowhtml += '<td style="text-align:center;">' + modeltrigger + '<br><br><button style="background-color: #01006D; color: yellow;" id="copyButton" onclick="copyToClipboard(' + "'" + modeltrigger + "'" + ')">Triggers to clipboard</button></td>' + nln
+                            rowhtml += '<td style="text-align:center;">' + modeltrigger + '<br><br><button style="background-color: #01006D; color: yellow; font-size: 20px;" id="copyButton" onclick="copyToClipboard(' + "'" + modeltrigger + "'" + ')">Triggers to clipboard</button></td>' + nln
                     case 4:
                         rowhtml += '<td style="text-align:center;"><a href="' + modelcivurl + '">' + str(modelid) + '</a></td>' + nln
                     case 5:
@@ -458,7 +461,7 @@ for mtype in ["LORA", "Checkpoint"]:
                         if modelimageprompt == "":
                             rowhtml += "<td></td>" + nln
                         else:
-                            rowhtml += '<td style="text-align:center;">' + modelimageprompt + '<br><br><button style="background-color: #01006D; color: yellow;" id="copyButton" onclick="copyToClipboard(' + "'" + modelimageprompt + "'" + ')">Prompt to clipboard</button></td>' + nln
+                            rowhtml += '<td style="text-align:center;">' + modelimageprompt + '<br><br><button style="background-color: #01006D; color: yellow; font-size: 20px;" id="copyButton" onclick="copyToClipboard(' + "'" + modelimageprompt + "'" + ')">Prompt to clipboard</button></td>' + nln
                     case 11:
                         rowhtml += '<td style="text-align:center;">' + modellastused + '</td>' + nln
             else:
@@ -512,7 +515,10 @@ for mtype in ["LORA", "Checkpoint"]:
                                     if basemodel.startswith("SD "):
                                         rowhtml += '<td style="color:white;background-color:black;text-align:center;">' + modelname + '</td>' + nln
                                     else:                                        
-                                        rowhtml += '<td style="color:black;background-color:red;text-align:center;">' + modelname + '</td>' + nln
+                                        if basemodel.startswith("Illustrious"):
+                                            rowhtml += '<td style="color:maroon;background-color:cyan;text-align:center;">' + modelname + '</td>' + nln
+                                        else:   
+                                            rowhtml += '<td style="color:green;background-color:orange;text-align:center;">' + modelname + '</td>' + nln
                     case 1:
                         rowhtml += '<td style="text-align:center;">' + basemodel + '</td>' + nln
                     case 2:
@@ -521,7 +527,7 @@ for mtype in ["LORA", "Checkpoint"]:
                         if modeltrigger == "":
                             rowhtml += '<td style="text-align:center;"><i>No triggers</i></td>' + nln
                         else:
-                            rowhtml += '<td style="text-align:center;">' + modeltrigger + '<br><br><button style="background-color: #01006D; color: yellow;" id="copyButton" onclick="copyToClipboard(' + "'" + modeltrigger + "'" + ')">Triggers to clipboard</button></td>' + nln
+                            rowhtml += '<td style="text-align:center;">' + modeltrigger + '<br><br><button style="background-color: #01006D; color: yellow; font-size: 20px;" id="copyButton" onclick="copyToClipboard(' + "'" + modeltrigger + "'" + ')">Triggers to clipboard</button></td>' + nln
                     case 4:
                         rowhtml += '<td style="text-align:center;"><a href="' + modelcivurl + '">' + str(modelid) + '</a></td>' + nln
                     case 5:
@@ -551,7 +557,7 @@ for mtype in ["LORA", "Checkpoint"]:
                         if modelimageprompt == "":
                             rowhtml += "<td></td>" + nln
                         else:
-                            rowhtml += '<td style="text-align:center;">' + modelimageprompt + '<br><br><button style="background-color: #01006D; color: yellow;" id="copyButton" onclick="copyToClipboard(' + "'" + modelimageprompt + "'" + ')">Prompt to clipboard</button></td>' + nln
+                            rowhtml += '<td style="text-align:center;">' + modelimageprompt + '<br><br><button style="background-color: #01006D; color: yellow; font-size: 20px;" id="copyButton" onclick="copyToClipboard(' + "'" + modelimageprompt + "'" + ')">Prompt to clipboard</button></td>' + nln
                     case 11:
                         rowhtml += '<td style="text-align:center;">' + modellastused + '</td>' + nln
             else:
