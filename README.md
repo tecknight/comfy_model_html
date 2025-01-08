@@ -21,7 +21,7 @@
                       ┌──►Embed Images (0=False, 1=True). If True, will download 
                       │  images and save locally, making offline pages
                       │
-       7-100230004567-0
+       8-120340005678-0
        │ │││││││││││└─►Last used timestamp 
 	   │ ││││││││││└─►Prompt
 	   │ │││││││││└─►Example image
@@ -37,12 +37,13 @@
 	   └──►Number of columns
 
  The example and default string as shown above tells the program to create:  
- A 7 column table with:
+ An 8 column table with:
  - *Model name* in column 1
- - *Trigger words* in column 2
- - *Civitai URL* in column 3
- - *Denoise info* in column 4
- - *Example image* in column 5
- - *Prompt* in column 6
- - *Last used timestamp* in column 7
+ - *Base model* in column 2
+ - *Trigger words* in column 3
+ - *Civitai URL* in column 4
+ - *Denoise info* in column 5
+ - *Example image* in column 6
+ - *Prompt* in column 7
+ - *Last used timestamp* in column 8
  - Images are *not* embedded, and are linked as URLs
