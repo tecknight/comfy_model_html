@@ -11,12 +11,12 @@
  
  ![checkpoint report screencap](checkpoints.png)
  ****
- The format and composition of the html tables can be customized as follows
- You can customize the output table format completely.
- You can add fields, remove fields, change the column order, whatever you like    
- Number indicates which column in table, zero means do not include this field
- If you need 10 or more columns use hex (A = 10, B = 11, etc)       
- A 16 character formatted string can be passed as a shell parameter:
+ The format and composition of the html tables can be customized as follows:  
+ You can customize the output table format completely.  
+ You can add fields, remove fields, change the column order, whatever you like.    
+ Number indicates which column in table, zero means do not include this field.  
+ If you need 10 or more columns use hex (A = 10, B = 11, etc).        
+ A 16 character formatted string can be passed as a shell parameter:  
 
                       ┌──Embed Images (0=False, 1=True). If True, will download 
                       │  images and save locally, making offline pages
