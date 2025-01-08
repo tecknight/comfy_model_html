@@ -21,7 +21,7 @@
                       │  images and save locally, making offline pages
                       │
        7-100230004567-0
-       │ │││││││││││└─Last used date 
+       │ │││││││││││└─Last used timestamp 
 	   │ ││││││││││└─Prompt
 	   │ │││││││││└─Example image
 	   │ ││││││││└─Denoise info
@@ -36,12 +36,12 @@
 	   └──Number of columns
 
  The example and default string as shown above tells the program to create:
- - A 7 column table with
- - Model name in column 1
- - Trigger words in column 2
- - Civitai URL in column 3
- - Denoise info in column 4
- - Example image in column 5
+ A 7 column table with:
+ - *Model name* in column 1
+ - *Trigger words* in column 2
+ - *Civitai URL* in column 3
+ - *Denoise info* in column 4
+ - *Example image* in column 5
  - Prompt in column 6
- - Last used date in column 7
- - Images are not embedded, linked as URLs
+ - *Last used timestamp* in column 7
+ - Images are *not* embedded, and are linked as URLs
