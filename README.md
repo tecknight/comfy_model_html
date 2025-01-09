@@ -21,7 +21,7 @@
                       ┌──►Embed Images (0=False, 1=True). If True, will download 
                       │  images and save locally, making offline pages
                       │
-       8-120340005678-0
+       **8-120340005678-0**
        │ │││││││││││└─►Last used timestamp 
 	   │ ││││││││││└─►Prompt
 	   │ │││││││││└─►Example image
