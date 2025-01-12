@@ -49,10 +49,10 @@
  - Images are *not* embedded, and are linked as URLs
  
  An additional optional argument can be used to alter the default sort order of the table.
- The following are valid fields for this argument:
-	1. Model name
-	2. Base model
-	3. Last used timestamp
-	example:
-	2a,3d,1a
+ The following are valid fields for this argument:  
+	1. Model name  
+	2. Base model  
+	3. Last used timestamp  
+	example:  
+	2a,3d,1a  
  This would sort the table by Base model ascending, then by Last used timestamp descending, then by Model name
