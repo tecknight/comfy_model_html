@@ -14,9 +14,9 @@
 #                  │  images and save locally, making offline pages
 #                  │
 #   7-100230004567-0
-#   │ │││││││││││└─►Last used timestamp 
+#   │ │││││││││││└─►Last used timestamp (3)
 #   │ ││││││││││└─►Prompt
-#   │ │││││││││└─►Example image
+#   │ │││││││││└─►Example image 
 #   │ ││││││││└─►Denoise info (steps, sampler, scheduler and config scale)
 #   │ │││││││└─►# of Steps used
 #   │ ││││││└─►Model civitai ID
@@ -24,17 +24,17 @@
 #   │ ││││└─►Civitai URL
 #   │ │││└─►Trigger words
 #   │ ││└─►Model type (LORA or Checkpoint)
-#   │ │└─►Base model (Flux, Pony, etc)
-#   │ └─►Model name
+#   │ │└─►Base model (Flux, Pony, etc) (2)
+#   │ └─►Model name (1)
 #   └──►Number of columns
-
+#
+#   SB=2a,3d,1a
 
 import pathlib
 import hashlib
 import requests
 import json
 import folder_paths
-#import comfy.utils
 import time
 import sqlite3
 import datetime
@@ -153,7 +153,8 @@ def int2x(num):
 
 
 # read in the sage_cache.json file created by Sage Utils
-
+sqlvars = ["modelname", "basemodel", "modellastused"]
+varseng = ["model name", "base model", "last used timestamp"]
 tbcf = "8-120340005678-0"
 Embed_Images = False
 if len(sys.argv) > 1:
@@ -165,7 +166,36 @@ if len(sys.argv) > 1:
         print("using custom output format: " + passed)
     else:
         print("Improper argument: " + passed)
+passed = "2a,3d,1a"
+if len(sys.argv) > 2:
+    passed=sys.argv[2]
+    print("Using custom order by " + passed)
+    
+srtprms = passed.split(",")
+numfields = len(srtprms)
+orderby = "order by "
+eorderby = ""
+for j in range(numfields):
+    srt = srtprms[j]
+    sfield = srt[0:1]
+    sascdesc = srt[1:2]
+    vindex = x2int(sfield) - 1
+    if sascdesc == "d":
+        orderby += sqlvars[vindex] + " DESC"
+        eorderby += varseng[vindex] + " descending"
+    else:
+        orderby += sqlvars[vindex] + " ASC"
+        eorderby += varseng[vindex]
+        
+    if j == numfields - 1:
+        orderby += ";"
+        eorderby += "."
+    else:
+        orderby += ", "
+        eorderby += " then by "
 
+print("Table will be ordered by " + eorderby)   
+    
 nln = "\n"
 comfy_base = pathlib.Path(folder_paths.base_path)
 my_folder = comfy_base / "ComfyUI_Model-Catalog"
@@ -173,10 +203,6 @@ sc_path = comfy_base / "custom_nodes" / "ComfyUI_SageUtils" / "sage_cache.json"
 
 start_time = time.perf_counter()
 sage_cache = parse_json_file(sc_path)  # This will contain your parsed data if successful
-
-cpdict = {}  # this is a container for checkpoint info
-
-loradict = {}  # this is a container for lora info
 
 print('# of Models: ' + str(len(sage_cache)))
 num_models = len(sage_cache)
@@ -186,7 +212,7 @@ all_models = sage_cache.keys() # returns a list of model full paths
 conn = sqlite3.connect(":memory:") # create our sqlite3 db in memory
 # conn = sqlite3.connect("c:\\cui\\modelinfo.db")  # create sqlite3 db on disk
 cursor = conn.cursor()
-cursor.execute("CREATE TABLE modelinfo (modelname varchar(80), basemodel varchar(20), modeltype varchar(10), modeltrigger varchar(1000), modelcivurl varchar(100), modelhash varchar(10), modelid int, modelsteps int, modeldenoise varchar(200), modeleximageurl varchar(100), modelimageprompt varchar(1000), modellastused datetime primary key);")
+cursor.execute("CREATE TABLE modelinfo (modelname varchar(80), basemodel varchar(20), modeltype varchar(10), modeltrigger varchar(1000), modelcivurl varchar(100), modelhash varchar(10), modelid int, modelsteps int, modeldenoise varchar(200), modeleximageurl varchar(100), modelimageprompt varchar(1000), modellastused datetime);")
 conn.commit()
 i = 0
 for curmodel in all_models: # loop through each model
@@ -218,9 +244,7 @@ for curmodel in all_models: # loop through each model
         modellastused = ""
         
     modelcivurl = "https://civitai.com/models/" + str(modelid)
-#   print(f"..Processing: {modelname}")
     
-#   print(f"....Pulling json for: {modelhash}")
     civjson = get_civitai_json(modelhash)
     if civjson == {}:
         print(f"....Unable to get data from {modelhash}. Continuing")
@@ -305,43 +329,9 @@ for curmodel in all_models: # loop through each model
     if modeltype == "LoCon":
         modeltype = "LORA"
         
-    if modellastused == "":    
-        if modeltype == "LORA":
-#           print(f"....Writing {modelname} to LORA dict") 
-            loradict[curmodel] = {}
-            loradict[curmodel]['modelname'] = modelname
-            loradict[curmodel]['basemodel'] = basemodel  
-            loradict[curmodel]['modeltype'] = modeltype             
-            loradict[curmodel]['modeltrigger'] = modeltrigger
-            loradict[curmodel]['modelcivurl'] = modelcivurl
-            loradict[curmodel]['modeleximageurl'] = modeleximageurl
-            loradict[curmodel]['modelsteps'] = modelsteps
-            modeldenoise = "Steps: " + str(modelsteps) + "<br>" + "Sampler: " + modelsampler + "<br>" + "Scheduler: " + modelscheduler + "<br>" + "CFG Scale: " + str(modelcfgscale)
-            loradict[curmodel]['modeldenoise'] = modeldenoise
-            loradict[curmodel]['modelimageprompt'] = modelimageprompt
-            loradict[curmodel]['modellastused'] = modellastused
-            loradict[curmodel]['modelid'] = modelid
-            loradict[curmodel]['modelhash'] = modelhash
-        else:
-#           print(f"....Writing {modelname} to checkpoint dict") 
-            cpdict[curmodel] = {}
-            cpdict[curmodel]['modelname'] = modelname
-            cpdict[curmodel]['basemodel'] = basemodel 
-            cpdict[curmodel]['modeltype'] = modeltype            
-            cpdict[curmodel]['modeltrigger'] = modeltrigger
-            cpdict[curmodel]['modelcivurl'] = modelcivurl
-            cpdict[curmodel]['modeleximageurl'] = modeleximageurl
-            cpdict[curmodel]['modelsteps'] = modelsteps
-            modeldenoise = "Steps: " + str(modelsteps) + "<br>" + "Sampler: " + modelsampler + "<br>" + "Scheduler: " + modelscheduler + "<br>" + "CFG  Scale: " + str(modelcfgscale)
-            cpdict[curmodel]['modeldenoise'] = modeldenoise
-            cpdict[curmodel]['modelimageprompt'] = modelimageprompt
-            cpdict[curmodel]['modellastused'] = modellastused
-            cpdict[curmodel]['modelid'] = modelid
-            cpdict[curmodel]['modelhash'] = modelhash
-    else:       
-        modeldenoise = "Steps: " + str(modelsteps) + "<br>" + "Sampler: " + modelsampler + "<br>" + "Scheduler: " + modelscheduler + "<br>" + "CFG Scale: " + str(modelcfgscale)
-#       print(f"....Writing {modelname} to sqlite3 database")   
-        cursor.execute("INSERT INTO modelinfo (modelname, basemodel, modeltype, modeltrigger, modelcivurl, modeleximageurl, modelsteps, modeldenoise, modelimageprompt, modellastused, modelid, modelhash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (modelname, basemodel, modeltype, modeltrigger, modelcivurl, modeleximageurl, modelsteps, modeldenoise, modelimageprompt, modellastused, modelid, modelhash))
+      
+    modeldenoise = "Steps: " + str(modelsteps) + "<br>" + "Sampler: " + modelsampler + "<br>" + "Scheduler: " + modelscheduler + "<br>" + "CFG Scale: " + str(modelcfgscale)
+    cursor.execute("INSERT INTO modelinfo (modelname, basemodel, modeltype, modeltrigger, modelcivurl, modeleximageurl, modelsteps, modeldenoise, modelimageprompt, modellastused, modelid, modelhash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (modelname, basemodel, modeltype, modeltrigger, modelcivurl, modeleximageurl, modelsteps, modeldenoise, modelimageprompt, modellastused, modelid, modelhash))
 
 conn.commit()
 print("\n")
@@ -375,7 +365,7 @@ for mtype in ["LORA", "Checkpoint"]:
             totalhtml += "<th></th>"
             
     totalhtml += "</tr>"
-    dbselect = "SELECT * FROM modelinfo WHERE modeltype='" + mtype + "' order by modellastused DESC"
+    dbselect = "SELECT * FROM modelinfo WHERE modeltype='" + mtype + "' " + orderby
     
     cursor.execute(dbselect)  
 
@@ -394,7 +384,6 @@ for mtype in ["LORA", "Checkpoint"]:
         modeleximageurl = row[9]
         modelimageprompt = row[10]
         modellastused = row[11]
-#       print(f"..Read {modelname} from sqlite3 db")
         denohtml = modeldenoise
 
         for col in range (1, maxcol):
@@ -405,16 +394,16 @@ for mtype in ["LORA", "Checkpoint"]:
                 match elm:
                     case 0:
                         if basemodel.startswith("Flux"):
-                            rowhtml += '<td style="color:yellow;background-color:Tomato;text-align:center;">' + modelname + '</td>' + nln
+                            rowhtml += '<td style="color:yellow;background-color:maroon;text-align:center;">' + modelname + '</td>' + nln
                         else: 
                             if basemodel.startswith("Pony"):
-                                rowhtml += '<td style="color:black;background-color:yellow;text-align:center;">' + modelname + '</td>' + nln
+                                rowhtml += '<td style="color:white;background-color:green;text-align:center;">' + modelname + '</td>' + nln
                             else:
                                 if basemodel.startswith("SDXL"):
                                     rowhtml += '<td style="color:yellow;background-color:green;text-align:center;">' + modelname + '</td>' + nln
                                 else:
                                     if basemodel.startswith("SD "):
-                                        rowhtml += '<td style="color:white;background-color:black;text-align:center;">' + modelname + '</td>' + nln
+                                        rowhtml += '<td style="color:black;background-color:gray;text-align:center;">' + modelname + '</td>' + nln
                                     else:                                        
                                         if basemodel.startswith("Illustrious"):
                                             rowhtml += '<td style="color:maroon;background-color:cyan;text-align:center;">' + modelname + '</td>' + nln
@@ -467,102 +456,6 @@ for mtype in ["LORA", "Checkpoint"]:
         rowhtml += "</tr>"
 
         totalhtml += rowhtml
-    if mtype == "LORA":
-        modeld = loradict
-    else:
-        modeld = cpdict
-        
-    all_models = modeld.keys()                          # returns a list of model full paths
-    for curmodel in all_models:
-        modeltype = modeld[curmodel]['modeltype']
-        if modeltype != mtype:
-            continue
-        modelname = modeld[curmodel]['modelname']
-        modeltrigger = modeld[curmodel]['modeltrigger']
-        modelcivurl = modeld[curmodel]['modelcivurl']
-        modeleximageurl = modeld[curmodel]['modeleximageurl']
-        modelsteps = modeld[curmodel]['modelsteps']
-        modeldenoise = modeld[curmodel]['modeldenoise']
-        modelimageprompt = modeld[curmodel]['modelimageprompt']
-        modelid = modeld[curmodel]['modelid']
-        modelname = modeld[curmodel]['modelname']
-        modelhash = modeld[curmodel]['modelhash']
-        basemodel = modeld[curmodel]['basemodel']
-        modellastused = ""
-        rowhtml = "<tr>"
-
-        denohtml = modeldenoise
-
-        for col in range (1, maxcol):
-            fstr = int2x(col) 
-            elm = tbcf.find(fstr, 2)
-            if elm != -1:
-                elm = elm - 2
-                match elm:
-                    case 0:
-                        if basemodel.startswith("Flux"):
-                            rowhtml += '<td style="color:yellow;background-color:Tomato;text-align:center;">' + modelname + '</td>' + nln
-                        else: 
-                            if basemodel.startswith("Pony"):
-                                rowhtml += '<td style="color:black;background-color:yellow;text-align:center;">' + modelname + '</td>' + nln
-                            else:
-                                if basemodel.startswith("SDXL"):
-                                    rowhtml += '<td style="color:yellow;background-color:green;text-align:center;">' + modelname + '</td>' + nln
-                                else:
-                                    if basemodel.startswith("SD "):
-                                        rowhtml += '<td style="color:white;background-color:black;text-align:center;">' + modelname + '</td>' + nln
-                                    else:                                        
-                                        if basemodel.startswith("Illustrious"):
-                                            rowhtml += '<td style="color:maroon;background-color:cyan;text-align:center;">' + modelname + '</td>' + nln
-                                        else:   
-                                            rowhtml += '<td style="color:green;background-color:orange;text-align:center;">' + modelname + '</td>' + nln
-                    case 1:
-                        rowhtml += '<td style="text-align:center;">' + basemodel + '</td>' + nln
-                    case 2:
-                        rowhtml += '<td style="text-align:center;">' + modeltype + '</td>' + nln
-                    case 3:
-                        if modeltrigger == "":
-                            rowhtml += '<td style="text-align:center;"><i>No triggers</i></td>' + nln
-                        else:
-                            rowhtml += '<td style="text-align:center;">' + modeltrigger + '<br><br><button style="background-color: #01006D; color: yellow; font-size: 20px;" id="copyButton" onclick="copyToClipboard(' + "'" + modeltrigger + "'" + ')">Triggers to clipboard</button></td>' + nln
-                    case 4:
-                        rowhtml += '<td style="text-align:center;"><a href="' + modelcivurl + '">' + str(modelid) + '</a></td>' + nln
-                    case 5:
-                        rowhtml += '<td style="text-align:center;">' + modelhash + '</td>' + nln
-                    case 6:
-                        rowhtml += '<td style="text-align:center;">' + str(modelid) + '</td>' + nln
-                    case 7:
-                        rowhtml += '<td style="text-align:center;">' + str(modelsteps) + '</td>' + nln
-                    case 8:
-                        if modelsteps > 14 or modelsteps == 0:                        
-                            rowhtml += '<td style="text-align:center;">' + denohtml + '</td>' + nln
-                        else:
-                            rowhtml += '<td style="color:yellow;background-color:black;text-align:center;">' + denohtml + '</td>' + nln
-                    case 9:
-                        if Embed_Images == True:
-                            fname = getFNfromURL(modeleximageurl)
-                            ofname = my_folder / "images" / fname
-#                           print(f"retrieving {modeleximageurl} to {ofname}")
-                            
-                            download_image(modeleximageurl, ofname) 
-  
-                            rowhtml += '<td style="text-align:center;"><img src="' + str(ofname) + '"></td>' + nln
-                        else:
-                            rowhtml += '<td style="text-align:center;"><img src="' + modeleximageurl + '"></td>' + nln
-                            
-                    case 10:
-                        if modelimageprompt == "":
-                            rowhtml += "<td></td>" + nln
-                        else:
-                            rowhtml += '<td style="text-align:center;">' + modelimageprompt + '<br><br><button style="background-color: #01006D; color: yellow; font-size: 20px;" id="copyButton" onclick="copyToClipboard(' + "'" + modelimageprompt + "'" + ')">Prompt to clipboard</button></td>' + nln
-                    case 11:
-                        rowhtml += '<td style="text-align:center;">' + modellastused + '</td>' + nln
-            else:
-                rowhtml += "<td></td>"
-                        
-        rowhtml += "</tr>"
-        totalhtml += rowhtml        
-  
     totalhtml += '</table></body></html>'
     print("\n")
     if mtype == "LORA":
