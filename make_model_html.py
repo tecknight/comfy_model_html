@@ -40,6 +40,8 @@ import sqlite3
 import datetime
 import sys
 import html
+import os
+import re
 
 import urllib.request 
 
@@ -166,7 +168,8 @@ if len(sys.argv) > 1:
         print("using custom output format: " + passed)
     else:
         print("Improper argument: " + passed)
-passed = "2a,3d,1a"
+# passed = "2a,3d,1a"
+passed = "3d,2a,1a"
 if len(sys.argv) > 2:
     passed=sys.argv[2]
     print("Using custom order by " + passed)
@@ -198,8 +201,15 @@ print("Table will be ordered by " + eorderby)
     
 nln = "\n"
 comfy_base = pathlib.Path(folder_paths.base_path)
-my_folder = comfy_base / "ComfyUI_Model-Catalog"
-sc_path = comfy_base / "custom_nodes" / "ComfyUI_SageUtils" / "sage_cache.json"
+#  my_folder = comfy_base / "ComfyUI_Model-Catalog"
+my_folder = comfy_base / "user" / "default" / "modelhtml"
+img_folder = comfy_base / "user" / "default" / "modelhtml" / "images"
+if not os.path.isdir(my_folder):
+    os.mkdir(my_folder)
+if not os.path.isdir(img_folder):
+    os.mkdir(img_folder)
+
+sc_path = comfy_base / "user" / "default" / "SageUtils" / "sage_cache.json"
 
 start_time = time.perf_counter()
 sage_cache = parse_json_file(sc_path)  # This will contain your parsed data if successful
@@ -208,9 +218,9 @@ print('# of Models: ' + str(len(sage_cache)))
 num_models = len(sage_cache)
 HIGHINT = 32000
 all_models = sage_cache.keys() # returns a list of model full paths
-# pathlib.Path.unlink("c:\\cui\\modelinfo.db")
+
 conn = sqlite3.connect(":memory:") # create our sqlite3 db in memory
-# conn = sqlite3.connect("c:\\cui\\modelinfo.db")  # create sqlite3 db on disk
+
 cursor = conn.cursor()
 cursor.execute("CREATE TABLE modelinfo (modelname varchar(80), basemodel varchar(20), modeltype varchar(10), modeltrigger varchar(1000), modelcivurl varchar(100), modelhash varchar(10), modelid int, modelsteps int, modeldenoise varchar(200), modeleximageurl varchar(100), modelimageprompt varchar(1000), modellastused datetime);")
 conn.commit()
@@ -247,7 +257,7 @@ for curmodel in all_models: # loop through each model
     
     civjson = get_civitai_json(modelhash)
     if civjson == {}:
-        print(f"....Unable to get data from {modelhash}. Continuing")
+        print(f"....Unable to get data from {modelhash}. Name: {modelname}. Continuing...")
         continue
         
     foundeximage = False
@@ -312,7 +322,9 @@ for curmodel in all_models: # loop through each model
                 
             foundeximage = True
             
-    modeleximageurl = modeleximageurl.replace("width=450", "width=200")
+    # modeleximageurl = modeleximageurl.replace("width=450", "width=200")
+    modeleximageurl = re.sub(r"width=\d+", "width=200", modeleximageurl)
+
     modeltrigger = modeltrigger.replace(", ", ",")
     modeltrigger = modeltrigger.replace(",", ", ")
     if modeltrigger == "none":
@@ -406,7 +418,7 @@ for mtype in ["LORA", "Checkpoint"]:
                                         rowhtml += '<td style="color:black;background-color:gray;text-align:center;">' + modelname + '</td>' + nln
                                     else:                                        
                                         if basemodel.startswith("Illustrious"):
-                                            rowhtml += '<td style="color:maroon;background-color:cyan;text-align:center;">' + modelname + '</td>' + nln
+                                            rowhtml += '<td style="color:white;background-color:maroon;text-align:center;">' + modelname + '</td>' + nln
                                         else:   
                                             rowhtml += '<td style="color:green;background-color:orange;text-align:center;">' + modelname + '</td>' + nln
                     case 1:
