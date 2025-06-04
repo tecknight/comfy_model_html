@@ -10,10 +10,11 @@
 # If you need 10 or more columns use hex (A = 10, B = 11, etc).
 # A 16 character formatted string can be passed as a shell parameter:
 #
-#                  ┌──►Embed Images (0=False, 1=True). If True, will download 
-#                  │  images and save locally, making offline pages
-#                  │
-#   7-100230004567-0
+#                   ┌──►Embed Images (0=False, 1=True). If True, will download 
+#                   │  images and save locally, making offline pages
+#                   │
+#   8-1203400056780-0
+#   │ ││││││││││││└─►Model full directory path
 #   │ │││││││││││└─►Last used timestamp (3)
 #   │ ││││││││││└─►Prompt
 #   │ │││││││││└─►Example image 
@@ -42,7 +43,7 @@ import sys
 import html
 import os
 import re
-
+# 9-1304500067892-0
 import urllib.request 
 
 from pathlib import Path
@@ -150,18 +151,19 @@ def int2x(num):
 #    modeldenoise varchar(200), 
 #    modeleximageurl varchar(100), 
 #    modelimageprompt varchar(1000), 
-#    modellastused datetime primary key);
+#    modellastused datetime primary key),
+#    modelfullpath varchar(140));
 
 
-
+9-1203400056789-0
 # read in the sage_cache.json file created by Sage Utils
 sqlvars = ["modelname", "basemodel", "modellastused"]
 varseng = ["model name", "base model", "last used timestamp"]
-tbcf = "8-120340005678-0"
+tbcf = "8-1203400056780-0"
 Embed_Images = False
 if len(sys.argv) > 1:
     passed = sys.argv[1]
-    if len(passed) == 16:
+    if len(passed) == 17:
         tbcf = passed
         if passed.endswith('1'):
             Embed_Images = True
@@ -209,47 +211,68 @@ if not os.path.isdir(my_folder):
 if not os.path.isdir(img_folder):
     os.mkdir(img_folder)
 
-sc_path = comfy_base / "user" / "default" / "SageUtils" / "sage_cache.json"
-
+sci_path = comfy_base / "user" / "default" / "SageUtils" / "sage_cache_info.json"
+sch_path = comfy_base / "user" / "default" / "SageUtils" / "sage_cache_hash.json"
 start_time = time.perf_counter()
-sage_cache = parse_json_file(sc_path)  # This will contain your parsed data if successful
+sage_cache_info = parse_json_file(sci_path)
+sage_cache_hash = parse_json_file(sch_path)
 
-print('# of Models: ' + str(len(sage_cache)))
-num_models = len(sage_cache)
+# allsage = sage_cache.keys()
+# for checkthis in allsage:
+#    if os.path.isfile(checkthis):
+#        sage_cache[checkthis]["file_exists"] = True
+#    else:
+#        sage_cache[checkthis]["file_exists"] = False
+   
+#with open(sc_path, 'w') as f:
+#   json.dump(sage_cache, f, indent=4)
+   
+print('# of Models: ' + str(len(sage_cache_hash)))
+num_models = len(sage_cache_hash)
 HIGHINT = 32000
-all_models = sage_cache.keys() # returns a list of model full paths
+all_models = sage_cache_hash.keys() # returns a list of model full paths
 
 conn = sqlite3.connect(":memory:") # create our sqlite3 db in memory
 
 cursor = conn.cursor()
-cursor.execute("CREATE TABLE modelinfo (modelname varchar(80), basemodel varchar(20), modeltype varchar(10), modeltrigger varchar(1000), modelcivurl varchar(100), modelhash varchar(10), modelid int, modelsteps int, modeldenoise varchar(200), modeleximageurl varchar(100), modelimageprompt varchar(1000), modellastused datetime);")
+cursor.execute("CREATE TABLE modelinfo (modelname varchar(80), basemodel varchar(20), modeltype varchar(10), modeltrigger varchar(1000), modelcivurl varchar(100), modelhash varchar(10), modelid int, modelsteps int, modeldenoise varchar(200), modeleximageurl varchar(100), modelimageprompt varchar(1000), modellastused datetime, modelfullpath varchar(140), modelupdateavail bit(1));")
 conn.commit()
 i = 0
 for curmodel in all_models: # loop through each model
     i = i + 1
     pctdone = int((i / num_models) * 100)
     print(f"Loading: {pctdone}%", end="\r")
+#   print(f"curmodel={curmodel}")
+    modelhash = sage_cache_hash[curmodel]
+#   print(f"modelhash={modelhash}")
+    file_exists = os.path.isfile(curmodel)
+    if file_exists == False:
+        continue
+    
+
     try:
-        civitai = sage_cache[curmodel]['civitai']
+        civitai = sage_cache_info[modelhash]['civitai']
     except Exception:
         civitai = "False"
     if civitai == "False":
         continue
+
+    modelupdateavail = sage_cache_info[modelhash].get('update_available', False)
+    
     modeltrigger = ""
     basemodel = ""
-    basemodel = sage_cache[curmodel]['baseModel']
-    modeltype = sage_cache[curmodel]['model']['type']  # either Checkpoint or Lora
-    
-    modelname = sage_cache[curmodel]['model']['name']
-    modelid = sage_cache[curmodel]['modelId']
-    words = sage_cache[curmodel]['trainedWords']
+    basemodel = sage_cache_info[modelhash]['baseModel']
+    modeltype = sage_cache_info[modelhash]['model']['type']  # either Checkpoint or Lora
+    modelfullpath = curmodel
+    modelname = sage_cache_info[modelhash]['model']['name']
+    modelid = sage_cache_info[modelhash]['modelId']
+    words = sage_cache_info[modelhash]['trainedWords']
 
     modeltrigger = ", ".join(words)
     
    
-    modelhash = sage_cache[curmodel]['hash']
     try:
-        modellastused = sage_cache[curmodel]['lastUsed']
+        modellastused = sage_cache_info[modelhash]['lastUsed']
     except Exception:
         modellastused = ""
         
@@ -343,11 +366,11 @@ for curmodel in all_models: # loop through each model
         
       
     modeldenoise = "Steps: " + str(modelsteps) + "<br>" + "Sampler: " + modelsampler + "<br>" + "Scheduler: " + modelscheduler + "<br>" + "CFG Scale: " + str(modelcfgscale)
-    cursor.execute("INSERT INTO modelinfo (modelname, basemodel, modeltype, modeltrigger, modelcivurl, modeleximageurl, modelsteps, modeldenoise, modelimageprompt, modellastused, modelid, modelhash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (modelname, basemodel, modeltype, modeltrigger, modelcivurl, modeleximageurl, modelsteps, modeldenoise, modelimageprompt, modellastused, modelid, modelhash))
+    cursor.execute("INSERT INTO modelinfo (modelname, basemodel, modeltype, modeltrigger, modelcivurl, modeleximageurl, modelsteps, modeldenoise, modelimageprompt, modellastused, modelid, modelhash, modelfullpath, modelupdateavail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (modelname, basemodel, modeltype, modeltrigger, modelcivurl, modeleximageurl, modelsteps, modeldenoise, modelimageprompt, modellastused, modelid, modelhash, modelfullpath, modelupdateavail))
 
 conn.commit()
 print("\n")
-starthtml = "<!DOCTYPE html><html>\n<head><meta charset='utf-8'>\n<style>th {  border: 2px solid blue;  color: yellow; background-color: blue; font: 22px blue;}td {  border: 2px solid maroon;  font: 16px black;}</style>\n<script>async function copyToClipboard(text) {    try {    await navigator.clipboard.writeText(text);    console.log('Text copied to clipboard');  } catch (err) {    console.error('Failed to copy: ', err);  }}</script>\n</head><body><h1 align='center' style='color:red; background-color:yellow'>r3place</h1><table align='center'>   <tr> " 
+starthtml = "<!DOCTYPE html><html>\n<head><meta charset='utf-8'>\n<style>th {  border: 2px solid blue;  color: yellow; background-color: blue; font: 22px blue;}td {  border: 2px solid maroon;  font: 16px black;}</style>\n<script src='https://tecknight.aiartalley.com/sorttable.js'>\n</script><script>async function copyToClipboard(text) {    try {    await navigator.clipboard.writeText(text);    console.log('Text copied to clipboard');  } catch (err) {    console.error('Failed to copy: ', err);  }}</script>\n</head><body><h1 align='center' style='color:white;'><div style='display: inline-block; background-color: green;'>ComfyUI LORA Information</div></h1><h2 align='center' style='color:darkblue;'><div style='display: inline-block; background-color: yellow;'>Click on column headings to SORT</div></h2><table id='loras' align='center' class='sortable'>   <tr>" 
 
 column_heads = [
    '<th style="width:200px;"><b>Model Name</b></th>',
@@ -361,11 +384,16 @@ column_heads = [
    '<th style="width:190px;"><b>Denoise settings</b></th>',
    '<th style="width:200px;"><b>Example Image</b></th>',
    '<th style="width:200px;"><b>Prompt used</b></th>',
-   '<th style="width:100px;"><b>Last Model Use</b></th>' ]
+   '<th style="width:100px;"><b>Last Model Use</b></th>',
+   '<th style="width:200px;"><b>Full Path/b></th>']
 
    
                           
 for mtype in ["LORA", "Checkpoint"]:
+    if mtype == "Checkpoint":
+        starthtml = starthtml.replace(">ComfyUI LORA", ">ComfyUI Checkpoint")
+        starthtml = starthtml.replace("id='loras'", "id='checkpoints'")
+        
     totalhtml = starthtml.replace("r3place", "ComfyUI " + mtype + " Information")
     maxcol = x2int(tbcf[0]) + 1
     for col in range (1, maxcol):
@@ -396,6 +424,8 @@ for mtype in ["LORA", "Checkpoint"]:
         modeleximageurl = row[9]
         modelimageprompt = row[10]
         modellastused = row[11]
+        modelfullpath = row[12]
+        modelupdateavail = row[13]
         denohtml = modeldenoise
 
         for col in range (1, maxcol):
@@ -431,7 +461,13 @@ for mtype in ["LORA", "Checkpoint"]:
                         else:
                             rowhtml += '<td style="text-align:center;">' + modeltrigger + '<br><br><button style="background-color: #01006D; color: yellow; font-size: 20px;" id="copyButton" onclick="copyToClipboard(' + "'" + modeltrigger + "'" + ')">Triggers to clipboard</button></td>' + nln
                     case 4:
-                        rowhtml += '<td style="text-align:center;"><a href="' + modelcivurl + '">' + str(modelid) + '</a></td>' + nln
+                        rowhtml += '<td style="text-align:center;' 
+                        if modelupdateavail == True:
+                            rowhtml += 'background-color:orange;'
+                        rowhtml += '"><a href="' + modelcivurl + '">' + str(modelid) + '</a>'
+                        if modelupdateavail == True:
+                            rowhtml += '<br><br><i>An update is available</i>'
+                        rowhtml += '</td>' + nln
                     case 5:
                         rowhtml += '<td style="text-align:center;">' + modelhash + '</td>' + nln
                     case 6:
@@ -450,10 +486,15 @@ for mtype in ["LORA", "Checkpoint"]:
 #                           print(f"retrieving {modeleximageurl} to {ofname}")
                             
                             download_image(modeleximageurl, ofname) 
-  
-                            rowhtml += '<td style="text-align:center;"><img src="' + str(ofname) + '"></td>' + nln
+                            if ofname.endswith(".mp4"):
+                                rowhtml += '<td style="text-align:center;"><video controls width="300"><source src="' + str(ofname) + '"> type="video/mp4" /></video></td>'
+                            else:
+                                rowhtml += '<td style="text-align:center;"><img src="' + str(ofname) + '"></td>' + nln
                         else:
-                            rowhtml += '<td style="text-align:center;"><img src="' + modeleximageurl + '"></td>' + nln
+                            if modeleximageurl.endswith(".mp4"):
+                                rowhtml += '<td style="text-align:center;"><video controls width="300"><source src="' + modeleximageurl + '"> type="video/mp4" /></video></td>'
+                            else:
+                                rowhtml += '<td style="text-align:center;"><img src="' + modeleximageurl + '"></td>' + nln
                             
                     case 10:
                         if modelimageprompt == "":
@@ -462,12 +503,21 @@ for mtype in ["LORA", "Checkpoint"]:
                             rowhtml += '<td style="text-align:center;">' + modelimageprompt + '<br><br><button style="background-color: #01006D; color: yellow; font-size: 20px;" id="copyButton" onclick="copyToClipboard(' + "'" + modelimageprompt + "'" + ')">Prompt to clipboard</button></td>' + nln
                     case 11:
                         rowhtml += '<td style="text-align:center;">' + modellastused + '</td>' + nln
+                        
+                    case 12:
+                        if not os.path.isfile(modelfullpath):
+                            addstyle = "background-color:red"
+                        else:
+                            addstyle = "background-color:green"
+
+                        rowhtml += '<td style="text-align:left;' + addstyle + '">' + modelfullpath + '</td>' + nln
             else:
                 rowhtml += "<td></td>"
                         
         rowhtml += "</tr>"
 
         totalhtml += rowhtml
+        
     totalhtml += '</table></body></html>'
     print("\n")
     if mtype == "LORA":
