@@ -155,11 +155,11 @@ def int2x(num):
 #    modelfullpath varchar(140));
 
 
-9-1203400056789-0
+# 9-1203400056789-0
 # read in the sage_cache.json file created by Sage Utils
-sqlvars = ["modelname", "basemodel", "modellastused"]
-varseng = ["model name", "base model", "last used timestamp"]
-tbcf = "8-1203400056780-0"
+sqlvars = ["modelname", "basemodel", "modellastused"] # possible fields to sort by
+varseng = ["model name", "base model", "last used timestamp"] # English description of those fields
+tbcf = "8-1203400056780-0" # default Table composition and format, overridden if argv[1] is a valid 17 character table descriptor
 Embed_Images = False
 if len(sys.argv) > 1:
     passed = sys.argv[1]
@@ -171,7 +171,7 @@ if len(sys.argv) > 1:
     else:
         print("Improper argument: " + passed)
 # passed = "2a,3d,1a"
-passed = "3d,2a,1a"
+passed = "3d,2a,1a" # default table sort, overridden if argv[2] passed on command line
 if len(sys.argv) > 2:
     passed=sys.argv[2]
     print("Using custom order by " + passed)
@@ -217,15 +217,7 @@ start_time = time.perf_counter()
 sage_cache_info = parse_json_file(sci_path)
 sage_cache_hash = parse_json_file(sch_path)
 
-# allsage = sage_cache.keys()
-# for checkthis in allsage:
-#    if os.path.isfile(checkthis):
-#        sage_cache[checkthis]["file_exists"] = True
-#    else:
-#        sage_cache[checkthis]["file_exists"] = False
-   
-#with open(sc_path, 'w') as f:
-#   json.dump(sage_cache, f, indent=4)
+
    
 print('# of Models: ' + str(len(sage_cache_hash)))
 num_models = len(sage_cache_hash)
